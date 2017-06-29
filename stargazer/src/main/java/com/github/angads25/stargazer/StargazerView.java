@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -24,8 +25,9 @@ public class StargazerView extends View {
     private int centerY;
 
     private long downTime;
-    private float downX;
-    private float downY;
+    private float downX, downY;
+
+    private Point A, B;
 
     public StargazerView(Context context) {
         super(context);
@@ -51,6 +53,8 @@ public class StargazerView extends View {
     private void initView() {
         paint = new Paint();
         paint.setAntiAlias(true);
+        A = new Point();
+        B = new Point();
     }
 
     @Override
@@ -66,43 +70,77 @@ public class StargazerView extends View {
             double ang = Math.toRadians(offset);
             double ang1 = Math.toRadians(offset + 32);
             double ang2 = Math.toRadians(offset - 32);
-            int pt1 = (int) (centerX + ((radius / 16) * Math.cos(ang)));
-            int pt2 = (int) (centerY + ((radius / 16) * Math.sin(ang)));
-            int pt3 = (int) (centerX + (radius * Math.cos(ang)));
-            int pt4 = (int) (centerY + (radius * Math.sin(ang)));
 
-            canvas.drawCircle(pt1, pt2, radius / 50, paint);
-            canvas.drawCircle(pt3, pt4, radius / 50, paint);
+            // Bottom Most Point
+            int pt1x = (int) (centerX + ((radius / 16) * Math.cos(ang)));
+            int pt1y = (int) (centerY + ((radius / 16) * Math.sin(ang)));
 
-            canvas.drawLine(pt1, pt2, pt3, pt4, paint);
+            //Top Most Point
+            int pt2x = (int) (centerX + (radius * Math.cos(ang)));
+            int pt2y = (int) (centerY + (radius * Math.sin(ang)));
 
-            int pt5 = (int) (centerX + ((radius >>> 1) * Math.cos(ang1)));
-            int pt6 = (int) (centerY + ((radius >>> 1) * Math.sin(ang1)));
+            canvas.drawCircle(pt1x, pt1y, radius / 50, paint);
+            canvas.drawCircle(pt2x, pt2y, radius / 50, paint);
 
-            int pt7 = (int) (centerX + ((radius >>> 1) * Math.cos(ang2)));
-            int pt8 = (int) (centerY + ((radius >>> 1) * Math.sin(ang2)));
+            canvas.drawLine(pt1x, pt1y, pt2x, pt2y, paint);
 
-            canvas.drawCircle(pt5, pt6, radius / 50, paint);
-            canvas.drawCircle(pt7, pt8, radius / 50, paint);
+            // Right Center Point
+            int pt3x = (int) (centerX + ((radius >>> 1) * Math.cos(ang1)));
+            int pt3y = (int) (centerY + ((radius >>> 1) * Math.sin(ang1)));
 
-            canvas.drawLine(pt1, pt2, pt5, pt6, paint);
-            canvas.drawLine(pt1, pt2, pt7, pt8, paint);
+            // Left Center Point
+            int pt4x = (int) (centerX + ((radius >>> 1) * Math.cos(ang2)));
+            int pt4y = (int) (centerY + ((radius >>> 1) * Math.sin(ang2)));
 
-            canvas.drawLine(pt3, pt4, pt5, pt6, paint);
-            canvas.drawLine(pt3, pt4, pt7, pt8, paint);
+            canvas.drawCircle(pt3x, pt3y, radius / 50, paint);
+            canvas.drawCircle(pt4x, pt4y, radius / 50, paint);
+
+            canvas.drawLine(pt1x, pt1y, pt3x, pt3y, paint);
+            canvas.drawLine(pt1x, pt1y, pt4x, pt4y, paint);
+
+            canvas.drawLine(pt2x, pt2y, pt3x, pt3y, paint);
+            canvas.drawLine(pt2x, pt2y, pt4x, pt4y, paint);
+
+            // Higher Curve Start Point Left
+            A.set(pt4x, pt4y);
+            B.set(pt2x, pt2y);
+
+            A = findX3Y3(A, B, 1);
+            canvas.drawCircle(A.x, A.y, radius / 50, paint);
+
+            // Higher Curve Start Point Right
+            A.set(pt3x, pt3y);
+            B.set(pt2x, pt2y);
+
+            A = findX3Y3(A, B, 1);
+            canvas.drawCircle(A.x, A.y, radius / 50, paint);
+
+            // Lower Curve Start Point Left
+            A.set(pt4x, pt4y);
+            B.set(pt1x, pt1y);
+
+            A = findX3Y3(A, B, 2);
+            canvas.drawCircle(A.x, A.y, radius / 50, paint);
+
+            // Lower Curve Start Point Right
+            A.set(pt3x, pt3y);
+            B.set(pt1x, pt1y);
+
+            A = findX3Y3(A, B, 2);
+            canvas.drawCircle(A.x, A.y, radius / 50, paint);
 
             offset = (offset % 360) + angle;
         }
 
-//        paint.setColor(Color.RED);
-//        offset = 90;
-//        for(int i = 0; i < 5; i++) {
-//            double ang = Math.toRadians(offset);
-//            int pt1 = (int) (centerX + (radius * Math.cos(ang)));
-//            int pt2 = (int) (centerY + (radius * Math.sin(ang)));
-//            canvas.drawLine(centerX, centerY, pt1, pt2, paint);
-//            offset = (offset % 360) + angle;
-//        }
+        paint.setColor(Color.RED);
+        offset = 90;
+        for(int i = 0; i < 5; i++) {
+            double ang = Math.toRadians(offset);
+            int pt1 = (int) (centerX + (radius * Math.cos(ang)));
+            int pt2 = (int) (centerY + (radius * Math.sin(ang)));
+            canvas.drawLine(centerX, centerY, pt1, pt2, paint);
+            offset = (offset % 360) + angle;
+        }
         // -----------------Reference Lines Ends------------------
     }
 
@@ -114,7 +152,7 @@ public class StargazerView extends View {
         bounds = Math.min(width, height);
         setMeasuredDimension(bounds, bounds);
         bounds = bounds >>> 1;
-        radius = bounds - ((bounds >>>1) / 5);
+        radius = bounds - ((bounds >>> 1) / 5);
         centerX = (getRight() - getLeft()) >>> 1;
         centerY = (getBottom() - getTop()) >>> 1;
     }
@@ -135,5 +173,26 @@ public class StargazerView extends View {
                                         break;
         }
         return super.onTouchEvent(event);
+    }
+
+    private Point findX3Y3(Point A, Point B, int level) {
+        int x1 = A.x;
+        int y1 = A.y;
+        int x2 = B.x;
+        int y2 = B.y;
+        int tempx = (x2 + x1) >>> 1;
+        int tempy = (y2 + y1) >>> 1;
+
+        int x3 = 0;
+        int y3 = 0;
+        for(int i = 0; i < level; i++) {
+            x3 = (x2 + tempx) >>> 1;
+            y3 = (y2 + tempy) >>> 1;
+
+            tempx = x3;
+            tempy = y3;
+        }
+        A.set(x3, y3);
+        return A;
     }
 }
