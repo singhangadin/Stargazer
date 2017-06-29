@@ -105,28 +105,28 @@ public class StargazerView extends View {
             A.set(pt4x, pt4y);
             B.set(pt2x, pt2y);
 
-            A = findX3Y3(A, B, 1);
+            A = findX3Y3(A, B, 2);
             canvas.drawCircle(A.x, A.y, radius / 50, paint);
 
             // Higher Curve Start Point Right
             A.set(pt3x, pt3y);
             B.set(pt2x, pt2y);
 
-            A = findX3Y3(A, B, 1);
+            A = findX3Y3(A, B, 2);
             canvas.drawCircle(A.x, A.y, radius / 50, paint);
 
             // Lower Curve Start Point Left
             A.set(pt4x, pt4y);
             B.set(pt1x, pt1y);
 
-            A = findX3Y3(A, B, 2);
+            A = findX3Y3(A, B, 3);
             canvas.drawCircle(A.x, A.y, radius / 50, paint);
 
             // Lower Curve Start Point Right
             A.set(pt3x, pt3y);
             B.set(pt1x, pt1y);
 
-            A = findX3Y3(A, B, 2);
+            A = findX3Y3(A, B, 3);
             canvas.drawCircle(A.x, A.y, radius / 50, paint);
 
             offset = (offset % 360) + angle;
@@ -180,15 +180,15 @@ public class StargazerView extends View {
         int y1 = A.y;
         int x2 = B.x;
         int y2 = B.y;
-        int tempx = (x2 + x1) >>> 1;
-        int tempy = (y2 + y1) >>> 1;
 
         int x3 = 0;
         int y3 = 0;
+
+        int tempx = x1;
+        int tempy = y1;
         for(int i = 0; i < level; i++) {
             x3 = (x2 + tempx) >>> 1;
             y3 = (y2 + tempy) >>> 1;
-
             tempx = x3;
             tempy = y3;
         }
