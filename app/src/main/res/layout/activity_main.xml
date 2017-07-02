@@ -4,10 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFF"
+    android:background="#555"
     tools:context="com.github.angads25.stargazerdemo.MainActivity">
 
     <com.github.angads25.stargazer.StargazerView
+        android:id="@+id/stargazer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Point;
 import android.os.Build;
 import android.util.AttributeSet;
@@ -27,7 +28,8 @@ public class StargazerView extends View {
     private long downTime;
     private float downX, downY;
 
-    private Point A, B;
+    private Point A, B, C, D, E, X1, X2;
+    private Path path1, path2;
 
     public StargazerView(Context context) {
         super(context);
@@ -53,20 +55,30 @@ public class StargazerView extends View {
     private void initView() {
         paint = new Paint();
         paint.setAntiAlias(true);
+        paint.setDither(true);
         A = new Point();
         B = new Point();
+        C = new Point();
+        D = new Point();
+        E = new Point();
+        X1 = new Point();
+        X2 = new Point();
+        path1 = new Path();
+        path2 = new Path();
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawColor(Color.BLACK);
-        paint.setColor(Color.WHITE);
+        paint.setColor(Color.parseColor("#FFFFFF"));
 
         // -----------------Reference Lines Start-----------------
         int angle = 72;
         int offset = -18;
         for(int i = 0; i < 5; i++) {
+
+            paint.setColor(Color.WHITE);
+
             double ang = Math.toRadians(offset);
             double ang1 = Math.toRadians(offset + 32);
             double ang2 = Math.toRadians(offset - 32);
@@ -74,12 +86,11 @@ public class StargazerView extends View {
             // Bottom Most Point
             int pt1x = (int) (centerX + ((radius / 16) * Math.cos(ang)));
             int pt1y = (int) (centerY + ((radius / 16) * Math.sin(ang)));
+            canvas.drawCircle(pt1x, pt1y, radius / 50, paint);
 
             //Top Most Point
             int pt2x = (int) (centerX + (radius * Math.cos(ang)));
             int pt2y = (int) (centerY + (radius * Math.sin(ang)));
-
-            canvas.drawCircle(pt1x, pt1y, radius / 50, paint);
             canvas.drawCircle(pt2x, pt2y, radius / 50, paint);
 
             canvas.drawLine(pt1x, pt1y, pt2x, pt2y, paint);
@@ -87,12 +98,11 @@ public class StargazerView extends View {
             // Right Center Point
             int pt3x = (int) (centerX + ((radius >>> 1) * Math.cos(ang1)));
             int pt3y = (int) (centerY + ((radius >>> 1) * Math.sin(ang1)));
+            canvas.drawCircle(pt3x, pt3y, radius / 50, paint);
 
             // Left Center Point
             int pt4x = (int) (centerX + ((radius >>> 1) * Math.cos(ang2)));
             int pt4y = (int) (centerY + ((radius >>> 1) * Math.sin(ang2)));
-
-            canvas.drawCircle(pt3x, pt3y, radius / 50, paint);
             canvas.drawCircle(pt4x, pt4y, radius / 50, paint);
 
             canvas.drawLine(pt1x, pt1y, pt3x, pt3y, paint);
@@ -105,41 +115,87 @@ public class StargazerView extends View {
             A.set(pt4x, pt4y);
             B.set(pt2x, pt2y);
 
-            A = findX3Y3(A, B, 2);
+            A = findNonConvexPoints(A, B, 2);
+
+            int p5x = A.x;
+            int p5y = A.y;
             canvas.drawCircle(A.x, A.y, radius / 50, paint);
 
-            // Higher Curve Start Point Right
+            // Higher Curve End Point Right
             A.set(pt3x, pt3y);
             B.set(pt2x, pt2y);
 
-            A = findX3Y3(A, B, 2);
+            A = findNonConvexPoints(A, B, 2);
+
+            int p6x = A.x;
+            int p6y = A.y;
             canvas.drawCircle(A.x, A.y, radius / 50, paint);
 
-            // Lower Curve Start Point Left
+            // Lower Curve End Point Left
             A.set(pt4x, pt4y);
             B.set(pt1x, pt1y);
 
-            A = findX3Y3(A, B, 3);
+            A = findNonConvexPoints(A, B, 3);
+
+            int p7x = A.x;
+            int p7y = A.y;
             canvas.drawCircle(A.x, A.y, radius / 50, paint);
 
             // Lower Curve Start Point Right
             A.set(pt3x, pt3y);
             B.set(pt1x, pt1y);
 
-            A = findX3Y3(A, B, 3);
+            A = findNonConvexPoints(A, B, 3);
+
+            int p8x = A.x;
+            int p8y = A.y;
             canvas.drawCircle(A.x, A.y, radius / 50, paint);
 
-            offset = (offset % 360) + angle;
-        }
+//            path1.moveTo(p7x, p7y);
+//            path1.lineTo(pt4x, pt4y);
+//            path1.lineTo(p5x, p5y);
+//            path1.quadTo(pt2x, pt2y, p6x, p6y);
+//            path1.lineTo(pt3x, pt3y);
+//            path1.lineTo(p8x, p8y);
+//            path1.quadTo(pt1x, pt1y, p7x, p7y);
+//
+//            canvas.drawPath(path1, paint);
 
-        paint.setColor(Color.RED);
-        offset = 90;
-        for(int i = 0; i < 5; i++) {
-            double ang = Math.toRadians(offset);
-            int pt1 = (int) (centerX + (radius * Math.cos(ang)));
-            int pt2 = (int) (centerY + (radius * Math.sin(ang)));
-            canvas.drawLine(centerX, centerY, pt1, pt2, paint);
+            //TODO:
+            int oldRadii = radius;
+
+            radius = radius - (radius >>> 2);
+
+            A.set(pt2x, pt2y);
+
+            // New Top Point
+            pt2x = (int) (centerX + (radius * Math.cos(ang)));
+            pt2y = (int) (centerY + (radius * Math.sin(ang)));
+            canvas.drawCircle(pt2x, pt2y, oldRadii / 50, paint);
+
+            B.set(pt4x, pt4y);
+            C.set(pt3x, pt3y);
+            D.set(pt1x, pt1y);
+            E.set(pt2x, pt2y);
+
+            // Right new point
+            X2 = findRightSidePoint(A, C, D, E);
+            canvas.drawCircle(X2.x, X2.y, oldRadii / 50, paint);
+            canvas.drawLine(pt2x, pt2y, X2.x, X2.y, paint);
+
+            // Left new point
+            X1 = findLeftSidePoint(A, B, D, E);
+            canvas.drawCircle(X1.x, X1.y, oldRadii / 50, paint);
+            canvas.drawLine(pt2x, pt2y, X1.x, X1.y, paint);
+
+            A = findNonConvexPoints(A, B, 2);
+            A = findNonConvexPoints(A, B, 3);
+
+            canvas.drawPath(path2, paint);
+            // TODO:
+
             offset = (offset % 360) + angle;
+            radius = oldRadii;
         }
         // -----------------Reference Lines Ends------------------
     }
@@ -175,7 +231,34 @@ public class StargazerView extends View {
         return super.onTouchEvent(event);
     }
 
-    private Point findX3Y3(Point A, Point B, int level) {
+    // Thanks to fleeblood for helping with this formula.
+    // https://math.stackexchange.com/a/2342342/459190
+    private Point findLeftSidePoint(Point A, Point B, Point D, Point E) {
+        double distance1 = Math.hypot(D.x - E.x, D.y - E.y);
+        double distance2 = Math.hypot(D.x - A.x, D.y - A.y);
+
+        double r = distance1 / distance2;
+        double X1x = D.x + (r * (B.x - D.x));
+        double X1y = D.y + (r * (B.y - D.y));
+        X1.set((int)X1x, (int)X1y);
+        return X1;
+    }
+
+
+    // Thanks to fleeblood for helping with this formula.
+    // https://math.stackexchange.com/a/2342342/459190
+    private Point findRightSidePoint(Point A, Point C, Point D, Point E) {
+        double distance1 = Math.hypot(D.x - E.x, D.y - E.y);
+        double distance2 = Math.hypot(D.x - A.x, D.y - A.y);
+
+        double r = distance1 / distance2;
+        double X2x = D.x + (r * (C.x - D.x));
+        double X2y = D.y + (r * (C.y - D.y));
+        X2.set((int)X2x, (int)X2y);
+        return X2;
+    }
+
+    private Point findNonConvexPoints(Point A, Point B, int level) {
         int x1 = A.x;
         int y1 = A.y;
         int x2 = B.x;
