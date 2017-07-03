@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="star_bkg">#FFFFFF</color>
+    <color name="star_frg">#FFD861</color>
+    <color name="text_clr">#77777777</color>
+</resources>
