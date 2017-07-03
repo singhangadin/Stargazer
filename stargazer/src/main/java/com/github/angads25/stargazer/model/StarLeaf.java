@@ -22,14 +22,19 @@ public class StarLeaf {
         E = new Point();
         G = new Point();
 
+        B = new Point();
+        D = new Point();
+        F = new Point();
+        H = new Point();
+
         path = new Path();
     }
 
     public void setPoints(Point H, Point B, Point D, Point F) {
-        this.H = H;
-        this.B = B;
-        this.D = D;
-        this.F = F;
+        this.H.set(H.x, H.y);
+        this.B.set(B.x, B.y);
+        this.D.set(D.x, D.y);
+        this.F.set(F.x, F.y);
 
         this.A = Utility.findNonConvexPoints(B, H, A, 3);
         this.G = Utility.findNonConvexPoints(F, H, G, 3);
@@ -38,8 +43,8 @@ public class StarLeaf {
     }
 
     public void setProgressPoints(Point H, Point B, Point D, Point F, Point E) {
-        this.H = H;
-        this.D = E;
+        this.H.set(H.x, H.y);
+        this.D.set(E.x, E.y);
         this.B = Utility.findLeftSidePoint(D, B, H, E, this.B);
         this.F = Utility.findRightSidePoint(D, F, H, E, this.F);
 

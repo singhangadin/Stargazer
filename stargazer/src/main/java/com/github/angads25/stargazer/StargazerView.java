@@ -125,7 +125,32 @@ public class StargazerView extends View {
             leaves[i].setProgressPoints(H, B, D, F, E);
             canvas.drawPath(leaves[i].getPath(), paint);
 
+            radius = radius >>> 1;
+
+            // Top Most Point
+            pt2x = (int) (centerX + (radius * Math.cos(ang)));
+            pt2y = (int) (centerY + (radius * Math.sin(ang)));
+            E.set(pt2x, pt2y);
+
+            paint.setColor(Color.RED);
+
+            leaves[i].setProgressPoints(H, B, D, F, E);
+            canvas.drawPath(leaves[i].getPath(), paint);
+
+            radius = radius >>> 1;
+
+            // Top Most Point
+            pt2x = (int) (centerX + (radius * Math.cos(ang)));
+            pt2y = (int) (centerY + (radius * Math.sin(ang)));
+            E.set(pt2x, pt2y);
+
+            paint.setColor(Color.BLACK);
+
+            leaves[i].setProgressPoints(H, B, D, F, E);
+            canvas.drawPath(leaves[i].getPath(), paint);
+
             radius = oldRadii;
+
 
             offset = (offset % 360) + angle;
         }
