@@ -18,10 +18,12 @@ package com.github.angads25.stargazerdemo;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
 
 import com.github.angads25.stargazer.widget.StargazerView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     private StargazerView view;
 
     @Override
@@ -29,16 +31,39 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         view = (StargazerView)findViewById(R.id.stargazer);
+//        Thread T1 = new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                try {
+//                    Thread.sleep(5000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                } finally {
+//                    view.animateLeaves(5);
+//                }
+//                try {
+//                    Thread.sleep(5000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                } finally {
+//                    view.animateLeaves(2);
+//                }
+//            }
+//        });
+//        T1.start();
+        findViewById(R.id.one).setOnClickListener(this);
+        findViewById(R.id.two).setOnClickListener(this);
+        findViewById(R.id.three).setOnClickListener(this);
+        findViewById(R.id.four).setOnClickListener(this);
+        findViewById(R.id.five).setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(final View v) {
         Thread T1 = new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } finally {
-                    view.animateLeaves(0);
-                }
+                view.animateLeaves(Integer.parseInt(((Button)v).getText().toString()));
             }
         });
         T1.start();

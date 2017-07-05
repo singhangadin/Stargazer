@@ -117,8 +117,47 @@ public class StargazerView extends View {
 
         for(int i = 0; i < 5;i++) {
             double ang = Math.toRadians(offset);
+            double ang1 = Math.toRadians(offset + 32);
+            double ang2 = Math.toRadians(offset - 32);
+
+            // Bottom Most Point
+            int pt1x = (int) (centerX + ((radius >>> 4) * Math.cos(ang)));
+            int pt1y = (int) (centerY + ((radius >>> 4) * Math.sin(ang)));
+            H.set(pt1x, pt1y);
+
+            // Left Center Point
+            int pt4x = (int) (centerX + ((radius >>> 1) * Math.cos(ang2)));
+            int pt4y = (int) (centerY + ((radius >>> 1) * Math.sin(ang2)));
+            B.set(pt4x, pt4y);
+
+            // Top Most Point
+            int pt2x = (int) (centerX + (radius * Math.cos(ang)));
+            int pt2y = (int) (centerY + (radius * Math.sin(ang)));
+            D.set(pt2x, pt2y);
+
+            // Right Center Point
+            int pt3x = (int) (centerX + ((radius >>> 1) * Math.cos(ang1)));
+            int pt3y = (int) (centerY + ((radius >>> 1) * Math.sin(ang1)));
+            F.set(pt3x, pt3y);
+
+            starLeaves[i].setPoints(H, B, D, F);
+
             paint.setColor(bgColor);
             canvas.drawPath(starLeaves[i].getPath(), paint);
+
+            // Top Most Progress Point
+            float factor = progressLeaves[i].getFactor();
+            float power = (float) Math.pow(2, i);
+            if(factor > power) {
+                factor = power;
+            }
+
+            float radii = ((radius * factor)/power);
+            pt2x = (int) (centerX + ((radii<minRadii?minRadii:radii) * Math.cos(ang)));
+            pt2y = (int) (centerY + ((radii<minRadii?minRadii:radii) * Math.sin(ang)));
+            E.set(pt2x, pt2y);
+
+            progressLeaves[i].setProgressPoints(H, B, D, F, E);
 
             paint.setColor(fgColor);
             canvas.drawPath(progressLeaves[i].getPath(), paint);
@@ -152,46 +191,6 @@ public class StargazerView extends View {
         minRadii = radius >>> 4;
         leafRadii = minRadii;
         baseRadii = radius;
-
-        // Initializing white star
-        int angle = 72;
-        int offset = -18;
-
-        for (int i = 0; i < 5; i++) {
-            double ang = Math.toRadians(offset);
-            double ang1 = Math.toRadians(offset + 32);
-            double ang2 = Math.toRadians(offset - 32);
-
-            // Bottom Most Point
-            int pt1x = (int) (centerX + ((radius >>> 4) * Math.cos(ang)));
-            int pt1y = (int) (centerY + ((radius >>> 4) * Math.sin(ang)));
-            H.set(pt1x, pt1y);
-
-            // Left Center Point
-            int pt4x = (int) (centerX + ((radius >>> 1) * Math.cos(ang2)));
-            int pt4y = (int) (centerY + ((radius >>> 1) * Math.sin(ang2)));
-            B.set(pt4x, pt4y);
-
-            // Top Most Point
-            int pt2x = (int) (centerX + (radius * Math.cos(ang)));
-            int pt2y = (int) (centerY + (radius * Math.sin(ang)));
-            D.set(pt2x, pt2y);
-
-            // Right Center Point
-            int pt3x = (int) (centerX + ((radius >>> 1) * Math.cos(ang1)));
-            int pt3y = (int) (centerY + ((radius >>> 1) * Math.sin(ang1)));
-            F.set(pt3x, pt3y);
-
-            starLeaves[i].setPoints(H, B, D, F);
-
-            // Top Most Progress Point
-            pt2x = (int) (centerX + ((radius - (radius >>> 2)) * Math.cos(ang)));
-            pt2y = (int) (centerY + ((radius - (radius >>> 2)) * Math.sin(ang)));
-            E.set(pt2x, pt2y);
-
-            progressLeaves[i].setProgressPoints(H, B, D, F, E);
-            offset = (offset % 360) + angle;
-        }
     }
 
     @Override
@@ -203,8 +202,7 @@ public class StargazerView extends View {
                                             downX = x; downY = y;
                                             break;
 
-            case MotionEvent.ACTION_UP: animateLeaves(0);
-                                        long diff = System.currentTimeMillis() - downTime;
+            case MotionEvent.ACTION_UP: long diff = System.currentTimeMillis() - downTime;
                                         if(diff < 500) {
                                             for (int i = 0; i < 5; i++) {
                                                 if(starLeaves[i].contains(x, y)) {
@@ -219,10 +217,27 @@ public class StargazerView extends View {
     }
 
     public void animateLeaves(int point) {
-        for(int i = minRadii ; i < baseRadii; i++) {
-            leafRadii = i;
+        for(int j = point - 1; j < 5; j++) {
+            progressLeaves[j].setFactor(0);
+        }
+        for(float i = 0 ; i < Math.pow(2, point); i += 0.2) {
+            for(int j = 0; j < point; j++) {
+                progressLeaves[j].setFactor(i);
+            }
             try {
-                Thread.sleep(1);
+                if(i < Math.pow(2, 1)) {
+                    Thread.sleep(20);
+                } else if(i < Math.pow(2, 1)) {
+                    Thread.sleep(10);
+                } else if(i < Math.pow(2, 2)) {
+                    Thread.sleep(5);
+                } else if(i < Math.pow(2, 3)) {
+                    Thread.sleep(2, 500000);
+                } else if(i < Math.pow(2, 4)) {
+                    Thread.sleep(1, 250000);
+                } else {
+                    Thread.sleep(0, 750000);
+                }
                 ((Activity)getContext()).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -233,5 +248,19 @@ public class StargazerView extends View {
                 e.printStackTrace();
             }
         }
+//        for(int i = minRadii ; i < baseRadii; i++) {
+//            leafRadii = i;
+//            try {
+//                Thread.sleep(1);
+//                ((Activity)getContext()).runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        invalidate();
+//                    }
+//                });
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 }

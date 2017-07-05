@@ -29,7 +29,7 @@ import com.github.angads25.stargazer.utils.Utility;
  */
 
 public class StarLeaf {
-    private int leafRadii;
+    private float factor;
 
     private Path path;
     private Point points[];
@@ -80,12 +80,12 @@ public class StarLeaf {
         return path;
     }
 
-    public int getLeafRadii() {
-        return leafRadii;
+    public float getFactor() {
+        return factor;
     }
 
-    public void setLeafRadii(int leafRadii) {
-        this.leafRadii = leafRadii;
+    public void setFactor(float factor) {
+        this.factor = factor;
     }
 
     public boolean contains(float x, float y) {
