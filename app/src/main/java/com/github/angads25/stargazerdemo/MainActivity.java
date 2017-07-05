@@ -19,53 +19,23 @@ package com.github.angads25.stargazerdemo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.Button;
+import android.widget.Toast;
 
+import com.github.angads25.stargazer.model.OnItemRatedListener;
 import com.github.angads25.stargazer.widget.StargazerView;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
-    private StargazerView view;
+public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        view = (StargazerView)findViewById(R.id.stargazer);
-//        Thread T1 = new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    Thread.sleep(5000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                } finally {
-//                    view.animateLeaves(5);
-//                }
-//                try {
-//                    Thread.sleep(5000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                } finally {
-//                    view.animateLeaves(2);
-//                }
-//            }
-//        });
-//        T1.start();
-        findViewById(R.id.one).setOnClickListener(this);
-        findViewById(R.id.two).setOnClickListener(this);
-        findViewById(R.id.three).setOnClickListener(this);
-        findViewById(R.id.four).setOnClickListener(this);
-        findViewById(R.id.five).setOnClickListener(this);
-    }
-
-    @Override
-    public void onClick(final View v) {
-        Thread T1 = new Thread(new Runnable() {
+        StargazerView view = (StargazerView) findViewById(R.id.stargazer);
+        view.setItemRatedListener(new OnItemRatedListener() {
             @Override
-            public void run() {
-                view.animateLeaves(Integer.parseInt(((Button)v).getText().toString()));
+            public void onItemRated(View v, final int rate) {
+                Toast.makeText(getBaseContext(), "Rated " + rate + " star", Toast.LENGTH_SHORT).show();
             }
         });
-        T1.start();
     }
 }

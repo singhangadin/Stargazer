@@ -24,11 +24,11 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
 import com.github.angads25.stargazer.R;
+import com.github.angads25.stargazer.model.OnItemRatedListener;
 import com.github.angads25.stargazer.model.StarLeaf;
 
 /**
@@ -55,7 +55,9 @@ public class StargazerView extends View {
     private StarLeaf[] starLeaves;
     private StarLeaf[] progressLeaves;
 
-    private int textColor, bgColor, fgColor;
+    private int textColor, textColorSelected, bgColor, fgColor;
+
+    private OnItemRatedListener itemRatedListener;
 
     public StargazerView(Context context) {
         super(context);
@@ -99,10 +101,12 @@ public class StargazerView extends View {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             textColor = getResources().getColor(R.color.text_clr, getContext().getTheme());
+            textColorSelected = getResources().getColor(R.color.text_clr_sel, getContext().getTheme());
             bgColor = getResources().getColor(R.color.star_bkg, getContext().getTheme());
             fgColor = getResources().getColor(R.color.star_frg, getContext().getTheme());
         } else {
             textColor = getResources().getColor(R.color.text_clr);
+            textColorSelected = getResources().getColor(R.color.text_clr_sel);
             bgColor = getResources().getColor(R.color.star_bkg);
             fgColor = getResources().getColor(R.color.star_frg);
         }
@@ -153,8 +157,8 @@ public class StargazerView extends View {
             }
 
             float radii = ((radius * factor)/power);
-            pt2x = (int) (centerX + ((radii<minRadii?minRadii:radii) * Math.cos(ang)));
-            pt2y = (int) (centerY + ((radii<minRadii?minRadii:radii) * Math.sin(ang)));
+            pt2x = (int) (centerX + ((radii < minRadii ? minRadii : radii) * Math.cos(ang)));
+            pt2y = (int) (centerY + ((radii < minRadii ? minRadii : radii) * Math.sin(ang)));
             E.set(pt2x, pt2y);
 
             progressLeaves[i].setProgressPoints(H, B, D, F, E);
@@ -165,9 +169,13 @@ public class StargazerView extends View {
             int pttX = (int) (centerX + ((radius / 3) * Math.cos(ang)));
             int pttY = (int) (centerY + ((radius / 3) * Math.sin(ang)));
 
-            paint.setColor(textColor);
+            if(radii > radius / 3) {
+                paint.setColor(textColorSelected);
+            } else {
+                paint.setColor(textColor);
+            }
             paint.setStyle(Paint.Style.FILL_AND_STROKE);
-            paint.setTextSize(baseRadii >>> 3);
+            paint.setTextSize(baseRadii / 7);
             paint.setStrokeWidth(baseRadii >>> 7);
             float textSize = paint.measureText(""+i);
             canvas.drawText((i + 1)+"", pttX - (textSize / 2), pttY + (textSize / 2), paint);
@@ -206,7 +214,10 @@ public class StargazerView extends View {
                                         if(diff < 500) {
                                             for (int i = 0; i < 5; i++) {
                                                 if(starLeaves[i].contains(x, y)) {
-                                                    Log.e("CONTAINS", "Point: " + (i + 1));
+                                                    if(itemRatedListener!=null) {
+                                                        itemRatedListener.onItemRated(StargazerView.this, i + 1);
+                                                        animateLeaves(i + 1);
+                                                    }
                                                     break;
                                                 }
                                             }
@@ -216,38 +227,44 @@ public class StargazerView extends View {
         return super.onTouchEvent(event);
     }
 
-    public void animateLeaves(int point) {
-        for(int j = point - 1; j < 5; j++) {
-            progressLeaves[j].setFactor(0);
-        }
-        for(float i = 0 ; i < Math.pow(2, point); i += 0.2) {
-            for(int j = 0; j < point; j++) {
-                progressLeaves[j].setFactor(i);
-            }
-            try {
-                if(i < Math.pow(2, 1)) {
-                    Thread.sleep(20);
-                } else if(i < Math.pow(2, 1)) {
-                    Thread.sleep(10);
-                } else if(i < Math.pow(2, 2)) {
-                    Thread.sleep(5);
-                } else if(i < Math.pow(2, 3)) {
-                    Thread.sleep(2, 500000);
-                } else if(i < Math.pow(2, 4)) {
-                    Thread.sleep(1, 250000);
-                } else {
-                    Thread.sleep(0, 750000);
+    public void animateLeaves(final int point) {
+        Thread T1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for(int j = point - 1; j < 5; j++) {
+                    progressLeaves[j].setFactor(0);
                 }
-                ((Activity)getContext()).runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        invalidate();
+                for(float i = 0 ; i < Math.pow(2, point); i += 0.2) {
+                    for(int j = 0; j < point; j++) {
+                        progressLeaves[j].setFactor(i);
                     }
-                });
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                    try {
+                        if(i < Math.pow(2, 1)) {
+                            Thread.sleep(20);
+                        } else if(i < Math.pow(2, 1)) {
+                            Thread.sleep(10);
+                        } else if(i < Math.pow(2, 2)) {
+                            Thread.sleep(5);
+                        } else if(i < Math.pow(2, 3)) {
+                            Thread.sleep(2, 500000);
+                        } else if(i < Math.pow(2, 4)) {
+                            Thread.sleep(1, 250000);
+                        } else {
+                            Thread.sleep(0, 750000);
+                        }
+                        ((Activity)getContext()).runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                invalidate();
+                            }
+                        });
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
-        }
+        });
+        T1.start();
 //        for(int i = minRadii ; i < baseRadii; i++) {
 //            leafRadii = i;
 //            try {
@@ -262,5 +279,15 @@ public class StargazerView extends View {
 //                e.printStackTrace();
 //            }
 //        }
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        super.onWindowFocusChanged(hasWindowFocus);
+        invalidate();
+    }
+
+    public void setItemRatedListener(OnItemRatedListener itemRatedListener) {
+        this.itemRatedListener = itemRatedListener;
     }
 }
